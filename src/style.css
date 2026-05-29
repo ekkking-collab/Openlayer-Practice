@@ -1,0 +1,86 @@
+/* ==========================================================================
+   1. 核心重置 (Core Reset)
+   ========================================================================== */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box; /* 强制所有元素使用怪异盒模型，防止 padding 撑破布局 */
+}
+
+/* ==========================================================================
+   2. 页面全局基础环境 (HTML & BODY)
+   ========================================================================== */
+html,
+body {
+  width: 100%;
+  height: 100%;
+  /* 使用现代系统默认字体族，保证在不同操作系统（Windows/Mac/iOS/Android）下都能完美显示 */
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  font-size: 14px;
+  line-height: 1.5;
+  color: #333333;
+  background-color: #ffffff;
+  -webkit-font-smoothing: antialiased; /* 文字抗锯齿优化，让字体看起来更清晰 */
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ==========================================================================
+   3. Vue / React 根容器铺满设置
+   ========================================================================== */
+#map {
+  width: 100%;
+  height: 100%;
+}
+
+/* ==========================================================================
+   4. 常见 HTML 标签重置
+   ========================================================================== */
+/* 链接重置 */
+a {
+  color: inherit;
+  text-decoration: none;
+  background-color: transparent;
+  outline: none;
+  cursor: pointer;
+}
+
+/* 列表重置（常用于菜单、图层列表等） */
+ul,
+ol {
+  list-style: none;
+}
+
+/* 图片重置（防止图片超出父容器，消除底部缝隙） */
+img {
+  max-width: 100%;
+  height: auto;
+  vertical-align: middle;
+  border-style: none;
+}
+
+/* 表单与按钮基础重置（消除浏览器自带的丑陋边框和阴影） */
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  color: inherit;
+  outline: none;
+  border: none;
+}
+
+button {
+  cursor: pointer;
+  background: none;
+}
+
+/* 文本域禁止右下角手动拖拽拉伸（防止破坏页面排版） */
+textarea {
+  resize: none;
+}
