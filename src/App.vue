@@ -11,6 +11,8 @@ import Style from 'ol/style/Style'
 import Stroke from 'ol/style/Stroke'
 import Fill from 'ol/style/Fill'
 import axios from 'axios'
+import CircleStyle from 'ol/style/Circle' // 引入圆形样式，用于绘制点
+import Draw from 'ol/interaction/Draw' // 核心：引入绘制交互工具
 
 const cityName = ref('')
 // 创建axios实例
@@ -23,9 +25,9 @@ const cityFeatures = ref([])
 // 获取数据的函数
 const fetchCityData = async () => {
   try {
-    const response = await geoApi.get('/100000_full_city.json')
-    if (response.data && response.data.features) {
-      cityFeatures.value = response.data.features
+    const res = await geoApi.get('/100000_full_city.json')
+    if (res.data && res.data.features) {
+      cityFeatures.value = res.data.features
       console.log('全国城市 GeoJSON 数据加载成功！')
     }
   } catch (error) {
@@ -151,6 +153,71 @@ const view = new View({
   projection: 'EPSG:4326',
 })
 
+// 1. 创建用于存放绘制图形的数据源和图层
+const drawSource = new VectorSource()
+const drawLayer = new VectorLayer({
+  source: drawSource,
+  style: new Style({
+    fill: new Fill({
+      color: 'rgba(0, 0, 255, 0.4)',
+    }),
+    stroke: new Stroke({
+      color: 'rgba(0, 0,255, 0.4)',
+      width: 3,
+    }),
+    image: new CircleStyle({
+      radius: 7,
+      fill: new Fill({
+        color: 'rgba(0, 0, 255, 0.4)',
+      }),
+    }),
+  }),
+})
+let drawInteraction = null // 用于存储当前的绘制交互对象
+// 2. 监听下拉框变化的函数
+const handleDrawChange = (selectedValue) => {
+  // 每次切换时，先移除上一次的绘制交互
+  if (drawInteraction) {
+    map.value.removeInteraction(drawInteraction)
+    drawInteraction = null
+  }
+
+  if (!selectedValue) return
+
+  let geometryType = ''
+  let isFreehand = false
+
+  switch (selectedValue) {
+    case 'Option1': // 绘制直线
+      geometryType = 'LineString'
+      break
+    case 'Option2': // 绘制圆
+      geometryType = 'Circle'
+      break
+    case 'Option3': // 绘制多边形
+      geometryType = 'Polygon'
+      break
+    case 'Option4': // 自由画笔 (本质上是允许自由绘制的线条或多边形)
+      geometryType = 'LineString'
+      isFreehand = true
+      break
+    case 'Option5': // 清除要素
+      drawSource.clear() // 清空绘制图层的数据源
+      value.value = '' // 重置下拉框选择
+      return // 清除后直接返回，不创建新的 Draw 交互
+  }
+
+  // 创建并添加新的绘制交互
+  if (geometryType) {
+    drawInteraction = new Draw({
+      source: drawSource,
+      type: geometryType,
+      freehand: isFreehand, // 开启自由画笔模式
+    })
+    map.value.addInteraction(drawInteraction)
+  }
+}
+
 onMounted(() => {
   fetchCityData()
   map.value = new Map({
@@ -158,6 +225,7 @@ onMounted(() => {
     layers: [shpLayer],
     view,
   })
+  map.value.addLayer(drawLayer)
 })
 </script>
 
@@ -172,7 +240,12 @@ onMounted(() => {
           placeholder="请输入你要搜索的城市"
           @keyup.enter="printCityName"
         />
-        <el-select v-model="value" placeholder="Select" style="width: 240px">
+        <el-select
+          v-model="value"
+          placeholder="Select"
+          style="width: 240px"
+          @change="handleDrawChange"
+        >
           <el-option
             v-for="item in options"
             :key="item.value"
